@@ -1,4 +1,5 @@
 import { hostOpenWeather, keyOpenWeather} from '../Config'
+import { WeekDayLarge, WeatherIcons } from '../Constans'
 
 export default {
     weather,
@@ -12,7 +13,9 @@ function weather(city) {
     return fetch(url)
         .then(resp => resp.json())
         .then(resp => {
+
             if(resp.cod !== 200) throw resp.message
+            
             return {
                 id: resp.id,
                 dt: resp.dt,
@@ -35,12 +38,27 @@ function weather(city) {
 }
 
 function forecast(city, country) {
-    const url = `${hostOpenWeather}/forecast?q=${city},${country}&appid=${keyOpenWeather}`
+    const url = `${hostOpenWeather}/forecast?q=${city},${country}&units=metric&appid=${keyOpenWeather}`
 
     return fetch(url)
         .then(resp => resp.json())
         .then(resp => {
+
             if(resp.cod !== "200") throw resp.message
-            return resp.list
+
+            return  resp.list.map(item => {
+                const date = new Date(item.dt * 1000) // unix date
+                return {
+                    id: item.dt,
+                    date: date,
+                    day: date.getDate(),
+                    hour: date.getHours(),
+                    weekDay: WeekDayLarge[date.getDay()],
+                    temperature: parseInt(item.main.temp),
+                    temperatureMax: parseInt(item.main.temp_max),
+                    temperatureMin: parseInt(item.main.temp_min),
+                    icon: WeatherIcons[item.weather[0].icon]
+                }
+            })
         })
 }

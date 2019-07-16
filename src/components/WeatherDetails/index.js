@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import './Styles.css'
 
 import OpenWeather from '../../services/OpenWeather';
-import {WeatherIcons, WeekDayLarge} from '../../Constans';
 
 import { Grid, Row } from 'react-flexbox-grid';
 import Table from '@material-ui/core/Table';
@@ -10,6 +9,7 @@ import TableHead from '@material-ui/core/TableHead';
 import TableBody from '@material-ui/core/TableBody';
 import TableRow from '@material-ui/core/TableRow';
 import TableCell from '@material-ui/core/TableCell';
+import CircularProgress from '@material-ui/core/CircularProgress'
 
 class WeatherDetails extends Component {
 
@@ -24,30 +24,19 @@ class WeatherDetails extends Component {
         this.update()
     }
 
-    componentDidUpdate(prevProps, prevState) {
-        //this.update()
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.city.city !== this.props.city.city) {
+            this.setState({list: null})
+            this.update()
+        }
     }
+
+    componentDidUpdate(prevProps, prevState) {}
 
     update = () => {
         const {city, country} = this.props.city
         OpenWeather.forecast(city, country).then(list => {
-            
-            list = list.map(item => {
-                const date = new Date(item.dt_txt)
-                return {
-                    id: item.id,
-                    date: date,
-                    weekDay: WeekDayLarge[date.getDay()],
-                    temperature: item.main.temp,
-                    temperatureMax: item.main.temp_max,
-                    temperatureMin: item.main.temp_min,
-                    icon: WeatherIcons[item.weather[0].icon]
-                }
-            })
-
-            this.setState({
-                list
-            })
+            this.setState({ list })
         })
     }
 
@@ -57,26 +46,28 @@ class WeatherDetails extends Component {
                 <Row center='xs' className='margin-top'><h1>{ this.props.city.city }</h1></Row>
                 <Row center='xs'><h3>{ this.props.city.main }</h3></Row>
                 <Row center='xs'><div className='temperature'>{ this.props.city.temperature }º</div></Row>
-                <Row>
-                    { this.state.list &&
+                <Row center='xs'>
+                { !this.state.list?
+                    <CircularProgress /> :
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Dia</TableCell>
+                                <TableCell>Fecha</TableCell>
+                                <TableCell>Hora</TableCell>
                                 <TableCell>Icono</TableCell>
-                                <TableCell>Maximo</TableCell>
-                                <TableCell>Minimo</TableCell>
+                                <TableCell>Mínimo</TableCell>
+                                <TableCell>Máximo</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            { this.state.list.map(item => (
-                                <TableRow key={item.id}>
-                                    <TableCell>{ item.weekDay }</TableCell>
-                                    <TableCell>{ item.icon }</TableCell>
-                                    <TableCell>{ item.temperatureMax }</TableCell>
-                                    <TableCell>{ item.temperatureMin }</TableCell>
-                                </TableRow>))
-                            }
+                        { this.state.list.map(item => (
+                            <TableRow key={item.id} hover>
+                                <TableCell>{ item.date.toLocaleString('es-MX', { weekday: 'long', day: 'numeric', month: 'long'}) }</TableCell>
+                                <TableCell>{ item.date.toLocaleString('es-MX', { hour: 'numeric', hour12: true}) }</TableCell>
+                                <TableCell><div className={`wi wi-wind wi-from-e wi-${item.icon} weather-icon`}></div></TableCell>
+                                <TableCell>{ item.temperatureMin }ºC</TableCell>
+                                <TableCell>{ item.temperatureMax }ºC</TableCell>
+                            </TableRow>))}
                         </TableBody>
                     </Table>}
                 </Row>

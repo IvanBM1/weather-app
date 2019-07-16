@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import './Styles.css';
 
 import OpenWeather from '../../services/OpenWeather'
-import {WeatherIcons} from '../../Constans';
+import { WeatherIcons } from '../../Constans';
 
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
